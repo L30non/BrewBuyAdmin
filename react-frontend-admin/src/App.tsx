@@ -1,9 +1,8 @@
-// src/App.js
 import React from 'react';
 import ProductList from './components/ProductList';
 import './App.css';
 
-function App() {
+const App: React.FC = () => {
   return (
     <div className="App">
       <main>
@@ -11,6 +10,6 @@ function App() {
       </main>
     </div>
   );
-}
+};
 
 export default App;

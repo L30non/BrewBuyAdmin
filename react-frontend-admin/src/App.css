@@ -1,5 +1,9 @@
+/* src/App.css */
 .App {
   text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .App-logo {
@@ -15,13 +19,14 @@
 
 .App-header {
   background-color: #282c34;
+  padding: 20px;
+  color: white;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
 }
 
 .App-link {
@@ -36,15 +41,7 @@
     transform: rotate(360deg);
   }
 }
-/* src/App.css */
-.App {
-  text-align: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.App-header {
+.App-header{
   background-color: #282c34;
   padding: 20px;
   color: white;

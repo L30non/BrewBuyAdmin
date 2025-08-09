@@ -1,7 +1,14 @@
-// src/components/ProductCard.js
+// src/components/ProductCard.tsx
 import React from 'react';
+import { Product } from '../types/Product';
 
-const ProductCard = ({ product, onEdit, onDelete }) => {
+interface ProductCardProps {
+  product: Product;
+  onEdit: (product: Product) => void;
+  onDelete: (id: number) => void;
+}
+
+const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) => {
   return (
     <div className="product-card">
       <h4>{product.name}</h4>
@@ -14,7 +21,7 @@ const ProductCard = ({ product, onEdit, onDelete }) => {
         <button className="btn btn-edit" onClick={() => onEdit(product)}>
           Edit
         </button>
-        <button className="btn btn-delete" onClick={() => onDelete(product.id)}>
+        <button className="btn btn-delete" onClick={() => product.id && onDelete(product.id)}>
           Delete
         </button>
       </div>
