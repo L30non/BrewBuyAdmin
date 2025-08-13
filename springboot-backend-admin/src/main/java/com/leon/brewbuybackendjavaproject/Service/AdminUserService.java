@@ -2,12 +2,13 @@ package com.leon.brewbuybackendjavaproject.Service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import com.leon.brewbuybackendjavaproject.dto.AdminUserDto;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class AdminUserService {
@@ -27,7 +28,7 @@ public class AdminUserService {
         String storedPassword = adminUsers.get(username);
         return storedPassword != null && passwordEncoder.matches(password, storedPassword);
     }
-
+    
     // Testing endpoints methods
     public List<AdminUserDto> getAllAdminUsers() {
         List<AdminUserDto> users = new ArrayList<>();
@@ -56,6 +57,9 @@ public class AdminUserService {
     public boolean deleteAdminUser(String username) {
         if (!adminUsers.containsKey(username)) {
             return false; // User doesn't exist
+        }
+        if ("admin".equals(username)) {
+            return false; // Cannot delete default admin
         }
         adminUsers.remove(username);
         return true;

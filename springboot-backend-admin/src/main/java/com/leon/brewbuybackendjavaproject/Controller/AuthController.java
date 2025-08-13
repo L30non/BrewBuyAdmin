@@ -1,13 +1,15 @@
 package com.leon.brewbuybackendjavaproject.Controller;
 
 // src/main/java/com/leon/brewbuybackendjavaproject/Controller/AuthController.java
-
 import com.leon.brewbuybackendjavaproject.dto.AdminUserDto;
-import com.leon.brewbuybackendjavaproject.dto.AuthRequest;
 import com.leon.brewbuybackendjavaproject.dto.AdminUserRequest;
+import com.leon.brewbuybackendjavaproject.dto.AuthRequest;
 import com.leon.brewbuybackendjavaproject.dto.AuthResponse;
+import java.util.Optional;
+import com.leon.brewbuybackendjavaproject.Model.User;
 import com.leon.brewbuybackendjavaproject.security.JwtUtil;
 import com.leon.brewbuybackendjavaproject.Service.AdminUserService;
+import com.leon.brewbuybackendjavaproject.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,25 +25,73 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private AdminUserService adminUserService;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody User user) {
         try {
-            // Validate admin credentials
-            if (!adminUserService.validateAdminCredentials(authRequest.getUsername(), authRequest.getPassword())) {
-                return ResponseEntity.badRequest().body("Invalid credentials");
+            // Check if username or email already exists
+            if (userService.userExists(user.getUsername())) {
+                return ResponseEntity.badRequest().body("Username already exists");
+            }
+            
+            if (userService.emailExists(user.getEmail())) {
+                return ResponseEntity.badRequest().body("Email already exists");
             }
 
-            // Generate JWT token
-            String token = jwtUtil.generateToken(authRequest.getUsername());
-            AuthResponse response = new AuthResponse(token, authRequest.getUsername());
+            // Create new user
+            User newUser = userService.createUser(user);
             
-            return ResponseEntity.ok(response);
+            // Generate JWT token
+            String token = jwtUtil.generateToken(newUser.getUsername());
+            AuthResponse response = new AuthResponse(token, newUser.getUsername());
+            
+            return ResponseEntity.ok(newUser);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Authentication failed");
+            return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
         }
     }
+
+    // In your AuthController, make sure the login response is consistent
+@PostMapping("/login")
+public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
+    try {
+        // First check if it's an admin user
+        if (adminUserService.validateAdminCredentials(authRequest.getUsername(), authRequest.getPassword())) {
+            String token = jwtUtil.generateToken(authRequest.getUsername());
+            AuthResponse response = new AuthResponse(token, authRequest.getUsername(), "admin");
+            return ResponseEntity.ok(response);
+        }
+        
+        // Then check regular user
+        Optional<User> userOptional = userService.getUserByUsernameOrEmail(authRequest.getUsername());
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            // Validate password using the UserService method
+            if (userService.validateUserCredentials(authRequest.getUsername(), authRequest.getPassword())) {
+                String token = jwtUtil.generateToken(user.getUsername());
+                // Return user details without password
+                User userResponse = new User();
+                userResponse.setId(user.getId());
+                userResponse.setUsername(user.getUsername());
+                userResponse.setEmail(user.getEmail());
+                userResponse.setFullName(user.getFullName());
+                userResponse.setPhone(user.getPhone());
+                userResponse.setCreatedAt(user.getCreatedAt());
+                userResponse.setUpdatedAt(user.getUpdatedAt());
+                
+                return ResponseEntity.ok(userResponse);
+            }
+        }
+
+        return ResponseEntity.badRequest().body("Invalid credentials");
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body("Authentication failed: " + e.getMessage());
+    }
+}
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
@@ -107,5 +157,11 @@ public class AuthController {
     public ResponseEntity<Boolean> checkUserExists(@PathVariable String username) {
         boolean exists = adminUserService.adminUserExists(username);
         return ResponseEntity.ok(exists);
+    }
+    
+    // Test endpoint
+    @GetMapping("/test")
+    public ResponseEntity<String> testConnection() {
+        return ResponseEntity.ok("Connection successful!");
     }
 }

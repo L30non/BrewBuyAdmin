@@ -1,5 +1,6 @@
 package com.leon.brewbuybackendjavaproject.config;
 
+import com.leon.brewbuybackendjavaproject.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,8 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import com.leon.brewbuybackendjavaproject.security.JwtAuthenticationFilter;
 
 import java.util.Arrays;
 
@@ -46,7 +45,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/register").permitAll()  // Allow registration
+                .requestMatchers("/api/auth/login").permitAll()     // Allow login
+                .requestMatchers("/api/auth/test").permitAll()      // Allow test
+                .requestMatchers("/api/auth/admin/**").permitAll()  // Allow admin management (for testing)
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
             )
