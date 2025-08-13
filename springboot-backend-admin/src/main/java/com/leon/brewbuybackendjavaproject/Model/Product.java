@@ -32,7 +32,7 @@ public class Product {
     @Positive(message = "Quantity must be positive")
     @Column(nullable = false)
     private Integer quantity;
-    
+
     
     // Getters and Setters
     public Long getId() {
@@ -74,5 +74,7 @@ public class Product {
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
     }
+
+
 }
 
