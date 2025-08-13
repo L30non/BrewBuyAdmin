@@ -23,14 +23,27 @@ const Products = () => {
     try {
       setLoading(true);
       setError('');
+      console.log('Fetching products...');
+      
+      // Log the token before making the request
+      const token = localStorage.getItem('token');
+      console.log('Token before API call:', token ? 'Present' : 'Missing');
+      
       const response = await ProductService.getAllProducts();
+      console.log('Products response:', response);
       setProducts(response.data);
     } catch (err) {
       console.error('Error fetching products:', err);
       if (err.response?.status === 401) {
         setError('Authentication required. Please login again.');
+      } else if (err.response?.status === 403) {
+        setError('Access forbidden. You do not have permission to view products.');
+      } else if (err.response?.status === 500) {
+        setError('Server error. Please try again later.');
+      } else if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+        setError('Network error. Please check your connection and ensure the backend server is running.');
       } else {
-        setError('Failed to fetch products. Please try again later.');
+        setError(`Failed to fetch products: ${err.message || 'Unknown error'}.`);
       }
     } finally {
       setLoading(false);
@@ -69,7 +82,17 @@ const Products = () => {
         fetchProducts(); // Refresh the list
       } catch (err) {
         console.error('Error deleting product:', err);
-        alert('Failed to delete product. Please try again.');
+        if (err.response?.status === 401) {
+          alert('Authentication required. Please login again.');
+        } else if (err.response?.status === 403) {
+          alert('Access forbidden. You do not have permission to delete products.');
+        } else if (err.response?.status === 404) {
+          alert('Product not found.');
+        } else if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+          alert('Network error. Please check your connection and ensure the backend server is running.');
+        } else {
+          alert('Failed to delete product. Please try again.');
+        }
       }
     }
   };

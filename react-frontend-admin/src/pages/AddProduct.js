@@ -28,6 +28,12 @@ const AddProduct = () => {
 
   const fetchProductById = async (productId) => {
     try {
+      console.log('Fetching product by ID:', productId);
+      
+      // Log the token before making the request
+      const token = localStorage.getItem('token');
+      console.log('Token before API call:', token ? 'Present' : 'Missing');
+      
       const response = await ProductService.getProductById(productId);
       const product = response.data;
       setFormData({
@@ -38,7 +44,15 @@ const AddProduct = () => {
       });
     } catch (error) {
       console.error('Error fetching product:', error);
-      alert('Failed to load product for editing.');
+      if (error.response?.status === 404) {
+        alert('Product not found.');
+      } else if (error.response?.status === 401) {
+        alert('Authentication required. Please login again.');
+      } else if (error.code === 'ECONNABORTED' || error.message === 'Network Error') {
+        alert('Network error. Please check your connection and ensure the backend server is running.');
+      } else {
+        alert('Failed to load product for editing. Please try again.');
+      }
       navigate('/products');
     } finally {
       setLoading(false);
@@ -90,8 +104,13 @@ const AddProduct = () => {
     setIsSubmitting(true);
     
     try {
+      // Log the token before making the request
+      const token = localStorage.getItem('token');
+      console.log('Token before API call:', token ? 'Present' : 'Missing');
+      
       if (isEditing) {
         // Update existing product
+        console.log('Updating product:', id, formData);
         await ProductService.updateProduct(id, {
           ...formData,
           price: parseFloat(formData.price),
@@ -100,6 +119,7 @@ const AddProduct = () => {
         alert('Product updated successfully!');
       } else {
         // Create new product
+        console.log('Creating new product:', formData);
         await ProductService.createProduct({
           ...formData,
           price: parseFloat(formData.price),
@@ -111,7 +131,17 @@ const AddProduct = () => {
       navigate('/products');
     } catch (err) {
       console.error('Error saving product:', err);
-      alert(`Failed to ${isEditing ? 'update' : 'add'} product. Please try again.`);
+      if (err.response?.status === 401) {
+        alert('Authentication required. Please login again.');
+      } else if (err.response?.status === 403) {
+        alert('Access forbidden. You do not have permission to save products.');
+      } else if (err.response?.status === 400) {
+        alert(`Invalid data: ${err.response.data?.message || 'Please check your input.'}`);
+      } else if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+        alert('Network error. Please check your connection and ensure the backend server is running.');
+      } else {
+        alert(`Failed to ${isEditing ? 'update' : 'add'} product. Please try again.`);
+      }
     } finally {
       setIsSubmitting(false);
     }

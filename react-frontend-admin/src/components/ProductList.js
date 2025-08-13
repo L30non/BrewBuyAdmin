@@ -22,8 +22,18 @@ const ProductList = () => {
       setProducts(response.data);
       setError('');
     } catch (err) {
-      setError('Failed to fetch products');
       console.error('Error fetching products:', err);
+      if (err.response?.status === 401) {
+        setError('Authentication required. Please login again.');
+      } else if (err.response?.status === 403) {
+        setError('Access forbidden. You do not have permission to view products.');
+      } else if (err.response?.status === 500) {
+        setError('Server error. Please try again later.');
+      } else if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+        setError('Network error. Please check your connection and ensure the backend server is running.');
+      } else {
+        setError(`Failed to fetch products: ${err.message || 'Unknown error'}.`);
+      }
     } finally {
       setLoading(false);
     }
@@ -36,7 +46,17 @@ const ProductList = () => {
       fetchProducts();
     } catch (err) {
       console.error('Error creating product:', err);
-      setError('Failed to create product');
+      if (err.response?.status === 401) {
+        setError('Authentication required. Please login again.');
+      } else if (err.response?.status === 403) {
+        setError('Access forbidden. You do not have permission to create products.');
+      } else if (err.response?.status === 400) {
+        setError(`Invalid data: ${err.response.data?.message || 'Please check your input.'}`);
+      } else if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+        setError('Network error. Please check your connection and ensure the backend server is running.');
+      } else {
+        setError('Failed to create product');
+      }
     }
   };
 
@@ -48,7 +68,19 @@ const ProductList = () => {
       fetchProducts();
     } catch (err) {
       console.error('Error updating product:', err);
-      setError('Failed to update product');
+      if (err.response?.status === 401) {
+        setError('Authentication required. Please login again.');
+      } else if (err.response?.status === 403) {
+        setError('Access forbidden. You do not have permission to update products.');
+      } else if (err.response?.status === 400) {
+        setError(`Invalid data: ${err.response.data?.message || 'Please check your input.'}`);
+      } else if (err.response?.status === 404) {
+        setError('Product not found.');
+      } else if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+        setError('Network error. Please check your connection and ensure the backend server is running.');
+      } else {
+        setError('Failed to update product');
+      }
     }
   };
 
@@ -59,7 +91,17 @@ const ProductList = () => {
         fetchProducts();
       } catch (err) {
         console.error('Error deleting product:', err);
-        setError('Failed to delete product');
+        if (err.response?.status === 401) {
+          setError('Authentication required. Please login again.');
+        } else if (err.response?.status === 403) {
+          setError('Access forbidden. You do not have permission to delete products.');
+        } else if (err.response?.status === 404) {
+          setError('Product not found.');
+        } else if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+          setError('Network error. Please check your connection and ensure the backend server is running.');
+        } else {
+          setError('Failed to delete product');
+        }
       }
     }
   };

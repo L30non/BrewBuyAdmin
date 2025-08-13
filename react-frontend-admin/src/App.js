@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import AddProduct from './pages/AddProduct';
 import Login from './pages/Login';
+import TestAuth from './TestAuth';
+import TestAPI from './TestAPI';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthService from './services/AuthService';
 import './App.css';
@@ -59,6 +61,29 @@ function App() {
                 <Header />
                 <main className="main-content">
                   <AddProduct />
+                </main>
+              </>
+            </ProtectedRoute>
+          } />
+          
+          {/* Test routes for debugging */}
+          <Route path="/test-auth" element={
+            <ProtectedRoute>
+              <>
+                <Header />
+                <main className="main-content">
+                  <TestAuth />
+                </main>
+              </>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/test-api" element={
+            <ProtectedRoute>
+              <>
+                <Header />
+                <main className="main-content">
+                  <TestAPI />
                 </main>
               </>
             </ProtectedRoute>
