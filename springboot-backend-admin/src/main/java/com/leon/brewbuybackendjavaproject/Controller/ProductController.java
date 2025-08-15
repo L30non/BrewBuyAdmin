@@ -34,6 +34,11 @@ public class ProductController {
         return productService.createProduct(product);
     }
 
+    @PostMapping("/batch")
+    public List<Product> createMultiple(@RequestBody List<Product> products) {
+        return productService.createProducts(products);
+    }
+
     @PutMapping("/{id}")
     public Product update(@PathVariable Long id, @RequestBody Product product) {
         return productService.updateProduct(id, product);

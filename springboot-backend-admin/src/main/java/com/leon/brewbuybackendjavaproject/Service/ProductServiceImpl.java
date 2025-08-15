@@ -30,6 +30,11 @@ public class ProductServiceImpl implements ProductService {
     }
     
     @Override
+    public List<Product> createProducts(List<Product> products) {
+        return productRepository.saveAll(products);
+    }
+    
+    @Override
     public Product updateProduct(Long id, Product productDetails) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));

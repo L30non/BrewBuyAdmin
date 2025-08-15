@@ -48,7 +48,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/register").permitAll()  // Allow registration
                 .requestMatchers("/api/auth/login").permitAll()     // Allow login
                 .requestMatchers("/api/auth/test").permitAll()      // Allow test
-                .requestMatchers("/api/auth/admin/**").permitAll()  // Allow admin management (for testing)
+                .requestMatchers("/api/auth/admin/**").permitAll()
+                .requestMatchers("/api/products/**").permitAll() // Allow product management (for testing)
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
             )
