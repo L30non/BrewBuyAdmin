@@ -1,4 +1,4 @@
-package com.leon.brewbuybackendjavaproject.dto;
+package com.leon.brewbuybackendjavaproject.dto.response;
 
 public class AuthResponse {
     private String token;

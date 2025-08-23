@@ -1,4 +1,4 @@
-package com.leon.brewbuybackendjavaproject.dto;
+package com.leon.brewbuybackendjavaproject.dto.request;
 
 public class AuthRequest {
     private String username;

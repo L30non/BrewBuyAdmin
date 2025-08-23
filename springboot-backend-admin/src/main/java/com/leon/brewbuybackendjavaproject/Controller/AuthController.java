@@ -2,9 +2,10 @@ package com.leon.brewbuybackendjavaproject.Controller;
 
 // src/main/java/com/leon/brewbuybackendjavaproject/Controller/AuthController.java
 import com.leon.brewbuybackendjavaproject.dto.AdminUserDto;
-import com.leon.brewbuybackendjavaproject.dto.AdminUserRequest;
-import com.leon.brewbuybackendjavaproject.dto.AuthRequest;
-import com.leon.brewbuybackendjavaproject.dto.AuthResponse;
+import com.leon.brewbuybackendjavaproject.dto.request.AdminUserRequest;
+import com.leon.brewbuybackendjavaproject.dto.request.AuthRequest;
+import com.leon.brewbuybackendjavaproject.dto.response.AuthResponse;
+
 import java.util.Optional;
 import com.leon.brewbuybackendjavaproject.Model.User;
 import com.leon.brewbuybackendjavaproject.security.JwtUtil;

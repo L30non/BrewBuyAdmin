@@ -1,5 +1,5 @@
 // src/main/java/com/leon/brewbuybackendjavaproject/dto/AdminUserRequest.java
-package com.leon.brewbuybackendjavaproject.dto;
+package com.leon.brewbuybackendjavaproject.dto.request;
 
 public class AdminUserRequest {
     private String username;
