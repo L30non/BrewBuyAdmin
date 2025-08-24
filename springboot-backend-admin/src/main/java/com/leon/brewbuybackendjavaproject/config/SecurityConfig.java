@@ -50,6 +50,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/test").permitAll()      // Allow test
                 .requestMatchers("/api/auth/admin/**").permitAll()
                 .requestMatchers("/api/products/**").permitAll() // Allow product management (for testing)
+                .requestMatchers("/api/orders/**").authenticated()
+                .requestMatchers("/api/orders/**").permitAll() // Require authentication for order management
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
             )

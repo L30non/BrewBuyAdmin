@@ -3,10 +3,11 @@ package com.leon.brewbuybackendjavaproject.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +16,9 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    // Use a fixed 256-bit secret key (32 bytes = 256 bits)
+    private final String SECRET_KEY_STRING = "mySecretKeyForBrewBuyPlatform123456"; // 32 characters
+    private final SecretKey secretKey = new SecretKeySpec(SECRET_KEY_STRING.getBytes(), SignatureAlgorithm.HS256.getJcaName());
     private final long JWT_TOKEN_VALIDITY = 24 * 60 * 60 * 1000; // 24 hours
 
     public String generateToken(String username) {
