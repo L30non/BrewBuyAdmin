@@ -1,6 +1,6 @@
-# Brew Buy Platform - Backend API Documentation
+# Brew Buy Platform - Android App API Documentation
 
-This document provides comprehensive information about the backend REST API for the Brew Buy Platform Android application. The backend is built with Spring Boot and provides endpoints for user authentication, product management, and order management.
+This document provides comprehensive information about the backend REST API for the Brew Buy Platform Android application. The backend is built with Spring Boot and provides endpoints for user authentication, product management (including image retrieval), and order management.
 
 ## Base URL
 
@@ -86,11 +86,13 @@ Authorization: Bearer [JWT_TOKEN]
 
 ## Product Management
 
-All product endpoints are publicly accessible.
+All product endpoints are publicly accessible (no authentication required for retrieval).
 
 ### Get All Products
 
 **Endpoint**: `GET /api/products`
+
+**Description**: Retrieve all products including their image data for display in the app.
 
 **Response**:
 ```json
@@ -114,38 +116,7 @@ All product endpoints are publicly accessible.
 
 **Endpoint**: `GET /api/products/{id}`
 
-**Response**:
-```json
-{
-  "id": 1,
-  "name": "Product Name",
-  "description": "Product Description",
-  "price": 19.99,
-  "quantity": 100,
-  "imageBase64": "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAA...",
-  "imageType": "image/jpeg"
-}
-```
-
-**Status Codes**:
-- 200: Success
-- 404: Product not found
-
-### Create Product
-
-**Endpoint**: `POST /api/products`
-
-**Request Body**:
-```json
-{
-  "name": "Product Name",
-  "description": "Product Description",
-  "price": 19.99,
-  "quantity": 100,
-  "imageBase64": "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAA...", (optional)
-  "imageType": "image/jpeg" (required if imageBase64 is provided)
-}
-```
+**Description**: Retrieve a specific product including its image data.
 
 **Response**:
 ```json
@@ -155,55 +126,10 @@ All product endpoints are publicly accessible.
   "description": "Product Description",
   "price": 19.99,
   "quantity": 100,
-  "imageBase64": "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAA...",
-  "imageType": "image/jpeg"
+    "imageBase64": "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAA...",
+    "imageType": "image/jpeg"
 }
 ```
-
-**Status Codes**:
-- 200: Success
-- 400: Validation error
-
-### Update Product
-
-**Endpoint**: `PUT /api/products/{id}`
-
-**Request Body**:
-```json
-{
-  "name": "Updated Product Name",
-  "description": "Updated Product Description",
-  "price": 29.99,
-  "quantity": 50,
-  "imageBase64": "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAA...", (optional)
-  "imageType": "image/png" (required if imageBase64 is provided)
-}
-```
-
-**Response**:
-```json
-{
-  "id": 1,
-  "name": "Updated Product Name",
-  "description": "Updated Product Description",
-  "price": 29.99,
-  "quantity": 50,
-  "imageBase64": "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAA...",
-  "imageType": "image/png"
-}
-```
-
-**Status Codes**:
-- 200: Success
-- 404: Product not found
-- 400: Validation error
-
-### Delete Product
-
-**Endpoint**: `DELETE /api/products/{id}`
-
-**Response**:
-No content
 
 **Status Codes**:
 - 200: Success
@@ -446,7 +372,7 @@ The API uses standard HTTP status codes:
 4. **Error Handling**: Implement proper error handling for network failures and API errors
 5. **Loading States**: Implement loading indicators for API calls
 6. **Offline Support**: Consider implementing offline support with local database (Room)
-7. **Image Handling**: For product images, convert images to Base64 format for upload and decode Base64 strings for display
+7. **Image Handling**: For product images, decode Base64 strings for display
 
 ## Example Retrofit Interface
 
@@ -467,15 +393,6 @@ public interface ApiService {
     @GET("api/products/{id}")
     Call<ProductResponse> getProduct(@Path("id") Long id);
     
-    @POST("api/products")
-    Call<ProductResponse> createProduct(@Body ProductRequest product);
-    
-    @PUT("api/products/{id}")
-    Call<ProductResponse> updateProduct(@Path("id") Long id, @Body ProductRequest product);
-    
-    @DELETE("api/products/{id}")
-    Call<Void> deleteProduct(@Path("id") Long id);
-    
     @POST("api/orders")
     Call<OrderResponse> createOrder(@Body CreateOrderRequest request);
     
@@ -493,6 +410,55 @@ public interface ApiService {
 }
 ```
 
+## Image Handling for Android
+
+### Decoding Base64 Images
+
+```java
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
+
+public class ImageUtils {
+    public static Bitmap decodeBase64ToImage(String base64String) {
+        try {
+            byte[] decodedBytes = Base64.decode(base64String, Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+}
+```
+
+### Using Images in RecyclerView
+
+```java
+public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
+    private List<ProductResponse> products;
+    
+    // ... other adapter code ...
+    
+    @Override
+    public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
+        ProductResponse product = products.get(position);
+        holder.nameTextView.setText(product.getName());
+        holder.priceTextView.setText(String.valueOf(product.getPrice()));
+        
+        // Decode and display image
+        if (product.getImageBase64() != null && !product.getImageBase64().isEmpty()) {
+            Bitmap bitmap = ImageUtils.decodeBase64ToImage(product.getImageBase64());
+            if (bitmap != null) {
+                holder.imageView.setImageBitmap(bitmap);
+            }
+        }
+    }
+    
+    // ... ViewHolder class ...
+}
+```
+
 ## Common Issues and Solutions
 
 1. **CORS Errors**: Make sure you're using the correct IP address for your backend
@@ -500,7 +466,7 @@ public interface ApiService {
 3. **Emulator Connection**: Use 10.0.2.2 instead of localhost when connecting from Android emulator
 4. **Token Expiration**: Handle JWT token expiration by redirecting to login screen
 5. **Order Ownership**: Users can only access orders they've created
-6. **Image Handling**: Large images may cause performance issues; consider compressing before upload
+6. **Image Memory**: Large images may cause memory issues; consider scaling images before display
 
 ## Testing Endpoints
 
@@ -520,11 +486,6 @@ curl -X POST http://localhost:8080/api/auth/login \
 # Get products (no authentication required)
 curl -X GET http://localhost:8080/api/products
 
-# Create a product (no authentication required)
-curl -X POST http://localhost:8080/api/products \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test Product","description":"A test product","price":19.99,"quantity":100}'
-
 # Create an order (requires authentication)
 curl -X POST http://localhost:8080/api/orders \
   -H "Content-Type: application/json" \
@@ -532,6 +493,16 @@ curl -X POST http://localhost:8080/api/orders \
   -d '{"items":[{"productId":1,"quantity":2,"price":19.99}]}'
 ```
 
-## Admin Functionality
+## Workflow for Image Handling
 
-Note: Admin functionality is handled separately through a web application. The Android app only needs to interact with user authentication, product management, and order management endpoints as documented above.
+1. **React Team** (Admin Panel):
+   - Uploads product images through the admin panel
+   - Images are converted to Base64 and sent to the backend
+   - Backend stores images as binary data in the database
+
+2. **Android Team** (Mobile App):
+   - Retrieves products with Base64 encoded images
+   - Decodes Base64 strings to Bitmaps for display
+   - Displays images in product listings and details
+
+This workflow ensures that product images uploaded by the admin team are properly displayed in the mobile app.

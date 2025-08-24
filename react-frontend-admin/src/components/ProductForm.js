@@ -6,9 +6,12 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
     name: '',
     description: '',
     price: '',
-    quantity: ''
+    quantity: '',
+    imageBase64: '',
+    imageType: ''
   });
 
+  const [imagePreview, setImagePreview] = useState('');
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -17,10 +20,108 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
         name: product.name || '',
         description: product.description || '',
         price: product.price || '',
-        quantity: product.quantity || ''
+        quantity: product.quantity || '',
+        imageBase64: product.imageBase64 || '',
+        imageType: product.imageType || ''
       });
+      
+      // Set image preview if product has an image
+      if (product.imageBase64 && product.imageType) {
+        setImagePreview(`data:${product.imageType};base64,${product.imageBase64}`);
+      }
     }
   }, [product]);
+
+  // Function to convert file to Base64
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+        const base64String = reader.result.split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => {
+        reject(error);
+      };
+    });
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.match('image.*')) {
+        setErrors(prev => ({
+          ...prev,
+          image: 'Please select a valid image file (JPEG, PNG, etc.)'
+        }));
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors(prev => ({
+          ...prev,
+          image: 'Image size must be less than 5MB'
+        }));
+        return;
+      }
+      
+      try {
+        // Convert to Base64
+        const base64 = await convertToBase64(file);
+        
+        // Update form data
+        setFormData(prev => ({
+          ...prev,
+          imageBase64: base64,
+          imageType: file.type
+        }));
+        
+        // Set preview
+        setImagePreview(URL.createObjectURL(file));
+        
+        // Clear any previous image errors
+        if (errors.image) {
+          setErrors(prev => ({
+            ...prev,
+            image: ''
+          }));
+        }
+      } catch (error) {
+        console.error('Error converting image:', error);
+        setErrors(prev => ({
+          ...prev,
+          image: 'Error processing image file'
+        }));
+      }
+    } else {
+      // If no file selected, clear image data
+      setFormData(prev => ({
+        ...prev,
+        imageBase64: '',
+        imageType: ''
+      }));
+      setImagePreview('');
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      imageBase64: '',
+      imageType: ''
+    }));
+    setImagePreview('');
+    
+    // Clear file input
+    const fileInput = document.getElementById('image');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,11 +161,20 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit({
+      // Prepare data for submission
+      const submitData = {
         ...formData,
         price: parseFloat(formData.price),
         quantity: parseInt(formData.quantity)
-      });
+      };
+      
+      // Remove image data if no image is selected
+      if (!formData.imageBase64) {
+        delete submitData.imageBase64;
+        delete submitData.imageType;
+      }
+      
+      onSubmit(submitData);
     }
   };
 
@@ -123,6 +233,28 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
             className={errors.quantity ? 'error' : ''}
           />
           {errors.quantity && <span className="error-message">{errors.quantity}</span>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="image">Product Image:</label>
+          <input
+            type="file"
+            id="image"
+            name="image"
+            accept="image/*"
+            onChange={handleImageChange}
+            className={errors.image ? 'error' : ''}
+          />
+          {errors.image && <span className="error-message">{errors.image}</span>}
+          
+          {imagePreview && (
+            <div className="image-preview">
+              <img src={imagePreview} alt="Preview" style={{ maxWidth: '200px', maxHeight: '200px' }} />
+              <button type="button" className="btn btn-danger" onClick={handleRemoveImage}>
+                Remove Image
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="form-actions">

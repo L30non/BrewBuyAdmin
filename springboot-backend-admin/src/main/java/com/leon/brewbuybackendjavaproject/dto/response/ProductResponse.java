@@ -1,44 +1,35 @@
-package com.leon.brewbuybackendjavaproject.Model;
+package com.leon.brewbuybackendjavaproject.dto.response;
 
-import jakarta.persistence.*;
-import lombok.*;
-import jakarta.validation.constraints.*;
+import com.leon.brewbuybackendjavaproject.Model.Product;
+
 import java.math.BigDecimal;
+import java.util.Base64;
 
-@Entity
-@Table(name = "products")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Product {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class ProductResponse {
     private Long id;
-    
-    @NotBlank
-    @Column(nullable = false)
     private String name;
-    
-    @Column(length = 1000)
     private String description;
-    
-    @NotNull(message = "Price is required")
-    @Positive(message = "Price must be positive")
-    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
-    
-    @NotNull(message = "Quantity is required")
-    @Positive(message = "Quantity must be positive")
-    @Column(nullable = false)
     private Integer quantity;
+    private String imageBase64; // Base64 encoded image data
+    private String imageType;   // MIME type of the image
     
-    @Lob
-    @Column(name = "image_data", columnDefinition = "LONGBLOB")
-    private byte[] imageData;
+    // Constructors
+    public ProductResponse() {}
     
-    @Column(name = "image_type")
-    private String imageType;
+    public ProductResponse(Product product) {
+        this.id = product.getId();
+        this.name = product.getName();
+        this.description = product.getDescription();
+        this.price = product.getPrice();
+        this.quantity = product.getQuantity();
+        this.imageType = product.getImageType();
+        
+        // Convert image data to Base64 if it exists
+        if (product.getImageData() != null && product.getImageData().length > 0) {
+            this.imageBase64 = Base64.getEncoder().encodeToString(product.getImageData());
+        }
+    }
     
     // Getters and Setters
     public Long getId() {
@@ -81,12 +72,12 @@ public class Product {
         this.quantity = quantity;
     }
     
-    public byte[] getImageData() {
-        return imageData;
+    public String getImageBase64() {
+        return imageBase64;
     }
     
-    public void setImageData(byte[] imageData) {
-        this.imageData = imageData;
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
     }
     
     public String getImageType() {
@@ -97,4 +88,3 @@ public class Product {
         this.imageType = imageType;
     }
 }
-
